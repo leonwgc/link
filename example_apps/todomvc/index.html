@@ -1,0 +1,61 @@
+<!doctype html>
+<html data-framework="vue">
+
+<head>
+  <meta charset="utf-8">
+  <title>link.js • TodoMVC</title>
+  <link rel="stylesheet" href="index.css">
+  <!--<script src="https://unpkg.com/director/build/director.js"></script>-->
+  <style>.x-hide { display: none !important; }</style>
+</head>
+
+<body>
+  <section class="todoapp">
+    <header class="header">
+      <h1>todos</h1>
+      <input class="new-todo" autofocus autocomplete="off" placeholder="What needs to be done?" x-model="newTodo" @keyup="addTodo($event)">
+    </header>
+    <section class="main x-hide" x-show="todos.length">
+      <input class="" type="checkbox" x-model="allDone">
+      <ul class="todo-list">
+        <li x-for="todo in filteredTodos" class="todo" :key="todo.id" x-class="{ completed: todo.completed, editing: todo == editedTodo }">
+          <div class="view">
+            <input class="toggle" type="checkbox" x-model="todo.completed">
+            <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
+            <button class="destroy" @click="removeTodo(todo,$index)"></button>
+          </div>
+          <input class="edit" type="text" x-model="todo.title" v-todo-focus="todo == editedTodo" @blur="doneEdit(todo,$event)" @keyup="doneEdit(todo,$event)"
+            >
+        </li>
+      </ul>
+    </section>
+    <footer class="footer x-hide" x-show="todos.length">
+      <span class="todo-count">
+          <strong>{{ remaining }}</strong> {{ remaining | pluralize }} left
+        </span>
+      <ul class="filters">
+        <li><a href="#/all" x-class="{ selected: visibility == 'all' }">All</a></li>
+        <li><a href="#/active" x-class="{ selected: visibility == 'active' }">Active</a></li>
+        <li><a href="#/completed" x-class="{ selected: visibility == 'completed' }">Completed</a></li>
+      </ul>
+      <button class="clear-completed" @click="removeCompleted()" x-show="todos.length > remaining">
+          Clear completed
+        </button>
+    </footer>
+  </section>
+  <footer class="info">
+    <p>Double-click to edit a todo</p>
+    <p>Written by <a href="http://evanyou.me">Evan You</a></p>
+    <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+  </footer>
+
+  <script>
+    // for testing
+    if (navigator.userAgent.indexOf('PhantomJS') > -1) localStorage.clear()
+  </script>
+<!-- Delete ".min" for console warnings in development -->
+<script src="../../dist/link.js"></script>
+<script src="app.js"></script>
+</body>
+
+</html>

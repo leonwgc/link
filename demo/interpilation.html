@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>pagination demo</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+
+<body>
+  <div class="main" id='demo'>
+    <div>
+      <label>name:</label>
+      <input type="text" class="form-control" x-model='name'>
+      <label>age:</label>
+      <input type="text" class="form-control" x-model='age'>
+    </div>
+    <div>
+      my name is {{name}}, I am {{age}} years old
+    </div>
+    <div>
+      {{'my name is '+name+', I am '+age+' years old'}}
+    </div>
+  </div>
+  <script src="../dist/link.js"></script>
+  <script src="interpilation.js"></script>
+
+  </script>
+</body>
+
+</html>

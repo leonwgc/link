@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>class demo</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+
+<body>
+  <div class="main" id='demo'>
+    <h3> 点击文本也会改变样式</h3>
+    <input type="text" x-model='name' class="form-control" placeholder="when name is wgc , the below text will be red">
+    <div class="alert" x-class='{alert-success:success,hilight-text:name==="wgc"}' @click='successHandler' role="alert">Well done! You successfully read this important alert message.</div>
+    <input type="text" x-model='style' class="form-control" placeholder="input class will apply to below">
+    <div class="alert" role="alert" @click='hilight()' x-class='style'>Heads up! This alert needs your attention, but it's not super important.</div>
+  </div>
+  <script src="../dist/link.js"></script>
+  <script src="class.js"></script>
+
+  </script>
+</body>
+
+</html>

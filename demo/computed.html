@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>pagination demo</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+
+<body>
+  <div class="main" id='demo'>
+    <div>
+      full:{{full}}
+    </div>
+    <div>
+      <label>first:</label>
+      <input type="text" class="form-control" x-model='first'>
+      <label>last:</label>
+      <input type="text" class="form-control" x-model='last'>
+      <label>full:</label>
+      <input type="text" class="form-control" x-model='full'>
+    </div>
+    <div>
+      first:{{first}}
+    </div>
+    <div>
+      last:{{last}}
+    </div>
+    <div>
+      full:{{full}}
+    </div>
+  </div>
+  <script src="../dist/link.js"></script>
+  <script src="computed.js"></script>
+
+  </script>
+</body>
+
+</html>

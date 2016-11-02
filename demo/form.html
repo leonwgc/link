@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>pagination demo</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+
+<body>
+  <div class="main" id='demo'>
+    <form class="form-inline" novalidate>
+      <div class="form-group">
+        <label class="sr-only" for="exampleInputEmail3">a.b</label>
+        <input type="email" x-model='a.b' class="form-control" id="exampleInputEmail3" placeholder="Email">
+      </div>
+      <div class="form-group">
+        <label class="sr-only" for="exampleInputEmail3">Email address</label>
+        <input type="email" x-model='email' class="form-control" id="exampleInputEmail3" placeholder="Email">
+      </div>
+      <div class="form-group">
+        <label class="sr-only" for="exampleInputEmail3"> read only </label>
+        <input type="email" x-model='email' x-readonly='!!email' class="form-control" id="exampleInputEmail3" placeholder="Email">
+      </div>
+      <div class="form-group">
+        <label class="sr-only" for="exampleInputPassword3">Password</label>
+        <input type="password" x-model='password' class="form-control" id="exampleInputPassword3" placeholder="Password">
+      </div>
+      <div class="checkbox">
+        <label>
+      <input type="checkbox"  x-model='remember'>Remember me {{remember?"记住":"忘记"}}
+      </label>
+      </div>
+      <div>
+        <label>
+        <input type="radio"  name="sex" value="男" x-model='sex'> 男
+        </label>
+        <label>
+          <input type="radio"  name="sex" value="女" x-model='sex'> 女
+        </label>
+      </div>
+      <div>你的性别是: {{sex}}</div>
+      <div>爱吃什么水果?</div>
+      <div>
+        <label>
+        <input type="checkbox"  name="fruit" value="apple" x-model='fruit'> apple
+        </label>
+        <label>
+          <input type="checkbox"  name="fruit" value="orange" x-model='fruit'> orange
+        </label>
+        <label>
+          <input type="checkbox"  name="fruit" value="banana" x-model='fruit'> banana
+        </label>
+      </div>
+      <button type="button" class="btn btn-default" @click='clickme()'>click me</button>
+      <div>{{greeting}}</div>
+    </form>
+  </div>
+  <script src="../dist/link.js"></script>
+  <script src="form.js"></script>
+
+  </script>
+</body>
+
+</html>

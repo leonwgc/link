@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>com demo</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+
+<body>
+  <div class="main" id='demo'>
+    <input x-model='pageCount'>
+    <div>
+      <h4>below is hello-com with template</h4>
+      <hello-com></hello-com>
+    </div>
+
+    <div>
+      <h4>below is hello-a with templateUrl</h4>
+      <hello-a></hello-a>
+    </div>
+
+    <div>
+      <h4>below is pager</h4>
+      <pager pageCount='pageCount' pageChange='myPageChange'></pager>
+    </div>
+
+    <div>
+      <h4>counter</h4>
+      <counter></counter>
+      <counter></counter>
+    </div>
+  </div>
+  <script src="../dist/link.js"></script>
+  <script src="pager.com.js"></script>
+  <script src="comd.js"></script>
+
+</body>
+
+</html>

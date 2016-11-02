@@ -1,0 +1,8 @@
+<div class="pager">
+  <ul x-show="pageCount>1">
+    <li @click="page>1&&page--" x-class='{disable:page===1}'>&lt;</li>
+    <li x-for="item in pageNumbers" @click="page=item" x-class="{active:item===page}">
+      {{item}}</li>
+    <li @click="page<pageCount && page++" x-class="{disable:page===pageCount}">&gt;</li>
+  </ul>
+</div>

@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>pagination demo</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+
+<body>
+  <div class="main" id='demo'>
+    <button @click='hello()' class="btn">fn()</button>
+    <div>age</div>
+    <input type="text" x-model='age' class="form-control">
+    <button @click='hi("leon",age,$event)' class="btn">fn(args with watch)</button>
+    <button @click='hi("leon",30)' class="btn">fn(..args)</button>
+    <button @click='age++' class="btn">expr: age++</button>
+    <button @click='--age' class="btn">expr: age--</button>
+
+
+  </div>
+  <script src="../dist/link.js"></script>
+  <script src="events.js"></script>
+
+</body>
+
+</html>

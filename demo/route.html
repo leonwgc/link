@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>view demo</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="demo.css">
+  <style>
+    a{
+      margin-right: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main" id='demo'>
+    <form class="form">
+      <input type="text" x-model='test' class="form-control">
+    </form>
+    <div>
+      <a href='#/index'>默认view</a>
+      <a href='#/home'>home view</a>
+      <a href='#/pre'>跳转到 index.html</a>
+      <a href='#/tpl'>内联template</a>
+      <a href='#/notexist'>不存在的路由</a>
+    </div>
+    <div x-view></div>
+  </div>
+  <script src="../dist/link.js"></script>
+  <script src="routed.js"></script>
+
+  </script>
+</body>
+
+</html>

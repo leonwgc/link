@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>pagination demo</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+
+<body>
+  <div class="main" id='main'>
+    <table class="table">
+      <tr x-for='msg in messages' @click='msg.focus=!msg.focus' x-class='{hilight:msg.focus}'>
+        <td class="t1">{{msg.title}}</td>
+        <td class="t2">{{msg.body}}</td>
+        <td class="t3">{{msg.time}}</td>
+      </tr>
+    </table>
+
+    <pager pageCount='pageCount' pageChange='pageChange'></pager>
+  </div>
+  <script src="../dist/link.js"></script>
+  <script src="pager.com.js"></script>
+  <script src="pagination.js"></script>
+
+  </script>
+</body>
+
+</html>

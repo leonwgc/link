@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>repeat demo</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+
+<body>
+  <div class="main" id='demo'>
+    <div x-for=' love in myloves'>
+      i love {{love.name}} and he/she is {{love.age}}
+      <input type="text" class="form-control" x-model='love.name' @focus='focus' @blur='blur'>
+      <input type="text" class="form-control" x-model='love.age'>
+      <button type="button" class="btn btn-danger" @click="removeLove()">Remove</button>
+    </div>
+    <div> <button type="button" class="btn btn-primary" @click="addLove()">Add one more love</button></div>
+  </div>
+  <script src="../dist/link.js"></script>
+  <script src="repeatd.js"></script>
+
+  </script>
+</body>
+
+</html>

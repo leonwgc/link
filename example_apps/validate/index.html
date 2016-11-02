@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>validate example</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="../../dist/link.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <ul>
+      <li class="user" x-for="user in users" transition>
+        <span>{{user.name}} - {{user.email}}</span>
+        <button @click="removeUser(user)">X</button>
+      </li>
+    </ul>
+    <form id="form">
+      <input x-model="newUser.name" >
+      <input x-model="newUser.email">
+      <input type="button" @click='addUser()' value="Add User" >
+      <div>{{newUser.name}}</div>
+    </form>
+    <ul class="errors">
+      <li x-show="!validation.name">Name cannot be empty.</li>
+      <li x-show="!validation.email">Please provide a valid email address.</li>
+    </ul>
+  </div>
+  <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,81 @@
+ html {
+   height: 100%;
+   font-size: 10px;
+   font-family: "Microsoft YaHei", "Wenquanyi Micro Hei", "WenQuanYi Micro Hei Mono", "WenQuanYi Zen Hei", "WenQuanYi Zen Hei", "Apple LiGothic Medium", SimHei, "ST Heiti", "WenQuanYi Zen Hei Sharp";
+ }
+ 
+ body {
+   position: relative;
+   font-size: 14px;
+   line-height: 1.42857143;
+   color: #333;
+   background-color: #fff;
+   padding: 10px 20px;
+ }
+ 
+ .form-control {
+   margin: 6px 0;
+ }
+ 
+ label {
+   display: inline-block;
+   max-width: 100%;
+   margin: 5px 0;
+   font-weight: 700;
+ }
+ 
+ .table {
+   border-collapse: collapse;
+   width: 100%;
+   border: 1px solid #ccc;
+ }
+ 
+ .hilight {
+   background: yellowgreen;
+ }
+ 
+ .hilight-text {
+   color: red;
+   font-weight: bold;
+ }
+ 
+ .pager {}
+ 
+ .pager>ul {
+   display: inline-block;
+   margin: 0;
+   padding: 0;
+ }
+ 
+ .pager>ul>li {
+   display: inline-block;
+   cursor: pointer;
+   border-radius: 2px;
+   margin-right: 6px;
+   width: 26px;
+   height: 26px;
+   text-align: center;
+   line-height: 26px;
+ }
+ 
+ .pager>ul>li.disable {
+   cursor: default;
+   color: #f0f0f0;
+ }
+ 
+ .pager>ul>li:hover {
+   background: #f0f0f0;
+ }
+ 
+ .pager>ul>li:first-child:hover, .pager>ul>li:last-child:hover {
+   background: #fff;
+ }
+ 
+ .pager>ul>li.active {
+   background: #ccc;
+   color: #fff;
+ }
+ 
+ div {
+   margin: 10px auto;
+ }

@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>pagination demo</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+
+<body>
+  <div class="main" id='demo'>
+    <div>
+      <label>name:</label>
+      <input type="text" class="form-control" x-model='address.location.area'>
+    </div>
+    <div>
+      <label>postcode:</label>
+      <input type="text" class="form-control" x-model='address.location.postcode'>
+    </div>
+    <div>
+      <label>city:</label>
+      <input type="text" class="form-control" x-model='address.city'>
+    </div>
+    <div x-show='address'>
+      {{ address | json}}
+    </div>
+
+  </div>
+  <script src="../dist/link.js"></script>
+  <script src="path.js"></script>
+
+  </script>
+</body>
+
+</html>
