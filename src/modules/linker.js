@@ -8,13 +8,13 @@ import { Watcher } from './watcher';
 import observe from './observer';
 
 export default class Link {
-  constructor(options) {
-    this.el = isString(options.el) ? document.querySelector(options.el) : options.el;
-    this.model = options.model || options.data;
-    this._methods = options.methods;
-    this._routes = options.routes;
-    this._dirs = options.dirs;
-    this._computed = options.computed;
+  constructor(config) {
+    this.el = isString(config.el) ? document.querySelector(config.el) : config.el;
+    this.model = config.model || {};
+    this._methods = config.methods;
+    this._routes = config.routes;
+    this._dirs = config.dirs;
+    this._computed = config.computed;
     this._eventStore = [];
     this._watchers = [];
     this._children = [];

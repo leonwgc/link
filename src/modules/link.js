@@ -1,21 +1,19 @@
 import { registerComponent } from './com';
 import { filters } from './var';
+import { isObject } from './helper';
 import Link from './linker';
 
-function link(options) {
-  if (!options || typeof options !== 'object') {
-    throw new Error('options must be an object.');
+function link(config) {
+  if (!isObject(config)) {
+    throw new Error('config must be an object.');
   }
-  if (!options.el) {
-    options.el = window.document;
+  if (!config.el) {
+    config.el = window.document;
   }
-  if (!options.model) {
-    options.model = {};
-  }
-  return new Link(options);
+  return new Link(config);
 };
 
-link.filter = function (name, fn) {
+link.filter = function(name, fn) {
   if (!filters[name] && typeof fn === 'function') {
     filters[name] = fn;
   }
