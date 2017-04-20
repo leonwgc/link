@@ -1,7 +1,7 @@
-export default function disabledHandler(linkContext) {
-  if (linkContext.value) {
-    linkContext.el.setAttribute("disabled", "disabled");
+export default function disabledHandler(value) {
+  if (value) {
+    this.el.setAttribute("disabled", "disabled");
   } else {
-    linkContext.el.removeAttribute("disabled");
+    this.el.removeAttribute("disabled");
   }
 }

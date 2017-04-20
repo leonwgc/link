@@ -26,25 +26,26 @@ function makeLinker(linkContext, item, index, el, valIsPrimitive) {
   return linker;
 }
 
-export default function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) {
-  if (arrayOpInfo && arrayOpInfo.op === 'mutate') return;
+export default function repeatHandler(newArr, oldArr, op) {
+  if (op && op.op === 'mutate') return;
+  var linkContext = this;
   var arr = newArr,
-    varRef = linkContext.var,
-    el = linkContext.el,
-    comment = linkContext.comment,
-    lastLinkers = linkContext.lastLinkers,
-    allLinkers = linkContext.allLinkers, // for primitiveType
+    varRef = this.var,
+    el = this.el,
+    comment = this.comment,
+    lastLinkers = this.lastLinkers,
+    allLinkers = this.allLinkers, // for primitiveType
     parentNode = el.parentNode || comment.parentNode,
-    valIsPrimitive = linkContext.valIsPrimitive;
+    valIsPrimitive = this.valIsPrimitive;
 
   if (typeof (valIsPrimitive) === 'undefined' && arr.length) {
-    valIsPrimitive = linkContext.valIsPrimitive = isPrimitive(arr[0]);
+    valIsPrimitive = this.valIsPrimitive = isPrimitive(arr[0]);
   }
 
   if (!lastLinkers) {
-    lastLinkers = linkContext.lastLinkers = [];
-    allLinkers = linkContext.allLinkers = [];
-    comment = linkContext.comment = document.createComment(`${varRef}`);
+    lastLinkers = this.lastLinkers = [];
+    allLinkers = this.allLinkers = [];
+    comment = this.comment = document.createComment(`${varRef}`);
     parentNode.insertBefore(comment, el);
     parentNode.removeChild(el);
   }
@@ -59,8 +60,8 @@ export default function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) 
   }
 
   function rebuild() {
-    var linker, len, docFrag;
-    var curLen = arr.length, lastLen = lastLinkers.length, allLen = allLinkers.length;
+    var linker, docFrag;
+    var curLen = arr.length, lastLen = lastLinkers.length, allLen;
 
     if (!curLen) {
       if (lastLen) {
@@ -85,6 +86,7 @@ export default function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) 
         lastLinkers.length = curLen;
       } else {
         docFrag = document.createDocumentFragment();
+        allLen = allLinkers.length;
         // reuse lastLinkers
         each(lastLinkers, (linker, index) => {
           linker.model[varRef] = arr[index];
@@ -136,17 +138,16 @@ export default function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) 
     return linker;
   }
 
-  if (arrayOpInfo) {
-    var fn = arrayOpInfo.op,
-      // watch = arrayOpInfo.watch,
-      args = arrayOpInfo.args,
-      hasNew = arrayOpInfo.hasNew,
+  if (op) {
+    var fn = op.op,
+      args = op.args,
+      isSame = oldArr === newArr,
       index,
       linker;
 
     switch (fn) {
       case 'push': {
-        if (oldArr === newArr || newArr.length > oldArr.length) {
+        if (isSame || newArr.length > oldArr.length) {
           index = arr.length - 1;
           linker = makeNew(arr[index], index, valIsPrimitive);
           parentNode.insertBefore(linker.el, comment);
@@ -154,7 +155,7 @@ export default function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) 
         break;
       }
       case 'pop': {
-        if (oldArr === newArr || newArr.length < oldArr.length) {
+        if (isSame || newArr.length < oldArr.length) {
           linker = lastLinkers.pop();
           parentNode.removeChild(linker.el);
           if (!valIsPrimitive) {
@@ -178,7 +179,7 @@ export default function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) 
         break;
       }
       case 'unshift': {
-        if (oldArr === newArr || newArr.length > oldArr.length) {
+        if (isSame || newArr.length > oldArr.length) {
           linker = makeNew(arr[0], 0, valIsPrimitive, null, true);
           parentNode.insertBefore(linker.el, lastLinkers[0].el);
           lastLinkers.unshift(linker);
@@ -186,7 +187,7 @@ export default function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) 
         break;
       }
       case 'shift': {
-        if (oldArr === newArr || newArr.length < oldArr.length) {
+        if (isSame || newArr.length < oldArr.length) {
           linker = lastLinkers.shift();
           parentNode.removeChild(linker.el);
           if (!valIsPrimitive) {

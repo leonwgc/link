@@ -1,3 +1,3 @@
-export default function bindHandler(linkContext) {
-  linkContext.el.textContent = linkContext.value;
+export default function bindHandler(value) {
+  this.el.textContent = value;
 }

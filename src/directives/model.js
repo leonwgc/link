@@ -1,8 +1,7 @@
 import { isBoolean } from '../modules/helper';
 
-export default function modelHandler(linkContext) {
-  var el = linkContext.el;
-  var value = linkContext.value;
+export default function modelHandler(value) {
+  var el = this.el;
   if (el.type === 'radio') {
     var checked = (el.value === value);
     if (el.checked != checked) {

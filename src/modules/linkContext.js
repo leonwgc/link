@@ -14,11 +14,10 @@ function filterFnGen(str, fromTextNode) {
   }
 }
 
-function genLinkCb(context) {
+function makeUIHandler(context) {
   var fn = drm[context.directive];
   return function(newVal, oldVal, op) {
-    context.value = newVal;
-    return fn(context, newVal, oldVal, op);
+    return fn.call(context, newVal, oldVal, op);
   }
 }
 
@@ -32,7 +31,7 @@ export class LinkContext {
   clone(el, linker) {
     var cloned = new LinkContext(el, this.directive, linker);
     extend(cloned, this, true);
-    cloned.watcher = Watcher.get(this.watcher.getter, linker, genLinkCb(cloned));
+    cloned.watcher = Watcher.get(this.watcher.getter, linker, makeUIHandler(cloned));
     linker._watchers.push(cloned.watcher);
     if (this.directive === 'x-model') {
       setModelReact(cloned);
@@ -43,9 +42,9 @@ export class LinkContext {
     var is2Way = directive === 'x-model';
     var context = new LinkContext(el, directive, linker);
     if (!text) {
-      context.watcher = Watcher.get(directive !== 'x-bind' ? expr : filterFnGen(expr, false), linker, genLinkCb(context));
+      context.watcher = Watcher.get(directive !== 'x-bind' ? expr : filterFnGen(expr, false), linker, makeUIHandler(context));
     } else {
-      context.watcher = Watcher.get(hasFilter(text, true) ? filterFnGen(text, true) : `"${text}"`.replace(leftBracket, '"+(').replace(rightBracket, ')+"'), linker, genLinkCb(context));
+      context.watcher = Watcher.get(hasFilter(text, true) ? filterFnGen(text, true) : `"${text}"`.replace(leftBracket, '"+(').replace(rightBracket, ')+"'), linker, makeUIHandler(context));
     }
 
     if (is2Way) {

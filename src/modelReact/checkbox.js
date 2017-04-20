@@ -4,7 +4,7 @@ export default function checkboxReact(linkContext) {
   function checkboxHandler() {
     var value = el.value,
       checked = el.checked,
-      watchVal = linkContext.value,
+      watchVal = linkContext.watcher.value,
       valIndex;
 
     if (isBoolean(watchVal)) {

@@ -1,7 +1,7 @@
-export default function readonlyHandler(linkContext) {
-  if (linkContext.value) {
-    linkContext.el.setAttribute("readonly", "readonly");
+export default function readonlyHandler(value) {
+  if (value) {
+    this.el.setAttribute("readonly", "readonly");
   } else {
-    linkContext.el.removeAttribute("readonly");
+    this.el.removeAttribute("readonly");
   }
 }

@@ -1,6 +1,5 @@
 import commonReact from './common';
 import checkboxReact from './checkbox';
-// import { parsePath } from '../modules/helper';
 
 export default function setModelReact(linkContext) {
   var el = linkContext.el,

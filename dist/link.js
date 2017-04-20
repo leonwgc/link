@@ -207,7 +207,7 @@ function checkboxReact(linkContext) {
   function checkboxHandler() {
     var value = el.value,
       checked = el.checked,
-      watchVal = linkContext.value,
+      watchVal = linkContext.watcher.value,
       valIndex;
     if (isBoolean(watchVal)) {
       linkContext.setPath(checked);
@@ -256,36 +256,34 @@ function setModelReact(linkContext) {
   }
 }
 
-function bindHandler(linkContext) {
-  linkContext.el.textContent = linkContext.value;
+function bindHandler(value) {
+  this.el.textContent = value;
 }
 
-function classHandler(linkContext) {
-  var exprVal = linkContext.value;
-  if (linkContext.className) {
-    if (exprVal) {
-      addClass(linkContext.el, linkContext.className);
+function classHandler(value) {
+  if (this.className) {
+    if (value) {
+      addClass(this.el, this.className);
     } else {
-      removeClass(linkContext.el, linkContext.className);
+      removeClass(this.el, this.className);
     }
   } else {
-    if (exprVal) {
-      addClass(linkContext.el, exprVal);
+    if (value) {
+      addClass(this.el, value);
     }
   }
 }
 
-function disabledHandler(linkContext) {
-  if (linkContext.value) {
-    linkContext.el.setAttribute("disabled", "disabled");
+function disabledHandler(value) {
+  if (value) {
+    this.el.setAttribute("disabled", "disabled");
   } else {
-    linkContext.el.removeAttribute("disabled");
+    this.el.removeAttribute("disabled");
   }
 }
 
-function modelHandler(linkContext) {
-  var el = linkContext.el;
-  var value = linkContext.value;
+function modelHandler(value) {
+  var el = this.el;
   if (el.type === 'radio') {
     var checked = (el.value === value);
     if (el.checked != checked) {
@@ -308,11 +306,11 @@ function modelHandler(linkContext) {
   }
 }
 
-function readonlyHandler(linkContext) {
-  if (linkContext.value) {
-    linkContext.el.setAttribute("readonly", "readonly");
+function readonlyHandler(value) {
+  if (value) {
+    this.el.setAttribute("readonly", "readonly");
   } else {
-    linkContext.el.removeAttribute("readonly");
+    this.el.removeAttribute("readonly");
   }
 }
 
@@ -335,23 +333,24 @@ function makeLinker(linkContext, item, index, el, valIsPrimitive) {
   linkContext.linker._children.push(linker);
   return linker;
 }
-function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) {
-  if (arrayOpInfo && arrayOpInfo.op === 'mutate') { return; }
+function repeatHandler(newArr, oldArr, op) {
+  if (op && op.op === 'mutate') { return; }
+  var linkContext = this;
   var arr = newArr,
-    varRef = linkContext.var,
-    el = linkContext.el,
-    comment = linkContext.comment,
-    lastLinkers = linkContext.lastLinkers,
-    allLinkers = linkContext.allLinkers,
+    varRef = this.var,
+    el = this.el,
+    comment = this.comment,
+    lastLinkers = this.lastLinkers,
+    allLinkers = this.allLinkers,
     parentNode = el.parentNode || comment.parentNode,
-    valIsPrimitive = linkContext.valIsPrimitive;
+    valIsPrimitive = this.valIsPrimitive;
   if (typeof (valIsPrimitive) === 'undefined' && arr.length) {
-    valIsPrimitive = linkContext.valIsPrimitive = isPrimitive(arr[0]);
+    valIsPrimitive = this.valIsPrimitive = isPrimitive(arr[0]);
   }
   if (!lastLinkers) {
-    lastLinkers = linkContext.lastLinkers = [];
-    allLinkers = linkContext.allLinkers = [];
-    comment = linkContext.comment = document.createComment(("" + varRef));
+    lastLinkers = this.lastLinkers = [];
+    allLinkers = this.allLinkers = [];
+    comment = this.comment = document.createComment(("" + varRef));
     parentNode.insertBefore(comment, el);
     parentNode.removeChild(el);
   }
@@ -364,8 +363,8 @@ function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) {
     }
   }
   function rebuild() {
-    var linker, len, docFrag;
-    var curLen = arr.length, lastLen = lastLinkers.length, allLen = allLinkers.length;
+    var linker, docFrag;
+    var curLen = arr.length, lastLen = lastLinkers.length, allLen;
     if (!curLen) {
       if (lastLen) {
         each(lastLinkers, function (linker) {
@@ -387,6 +386,7 @@ function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) {
         lastLinkers.length = curLen;
       } else {
         docFrag = document.createDocumentFragment();
+        allLen = allLinkers.length;
         each(lastLinkers, function (linker, index) {
           linker.model[varRef] = arr[index];
         });
@@ -431,15 +431,15 @@ function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) {
     }
     return linker;
   }
-  if (arrayOpInfo) {
-    var fn = arrayOpInfo.op,
-      args = arrayOpInfo.args,
-      hasNew = arrayOpInfo.hasNew,
+  if (op) {
+    var fn = op.op,
+      args = op.args,
+      isSame = oldArr === newArr,
       index,
       linker;
     switch (fn) {
       case 'push': {
-        if (oldArr === newArr || newArr.length > oldArr.length) {
+        if (isSame || newArr.length > oldArr.length) {
           index = arr.length - 1;
           linker = makeNew(arr[index], index, valIsPrimitive);
           parentNode.insertBefore(linker.el, comment);
@@ -447,7 +447,7 @@ function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) {
         break;
       }
       case 'pop': {
-        if (oldArr === newArr || newArr.length < oldArr.length) {
+        if (isSame || newArr.length < oldArr.length) {
           linker = lastLinkers.pop();
           parentNode.removeChild(linker.el);
           if (!valIsPrimitive) {
@@ -470,7 +470,7 @@ function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) {
         break;
       }
       case 'unshift': {
-        if (oldArr === newArr || newArr.length > oldArr.length) {
+        if (isSame || newArr.length > oldArr.length) {
           linker = makeNew(arr[0], 0, valIsPrimitive, null, true);
           parentNode.insertBefore(linker.el, lastLinkers[0].el);
           lastLinkers.unshift(linker);
@@ -478,7 +478,7 @@ function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) {
         break;
       }
       case 'shift': {
-        if (oldArr === newArr || newArr.length < oldArr.length) {
+        if (isSame || newArr.length < oldArr.length) {
           linker = lastLinkers.shift();
           parentNode.removeChild(linker.el);
           if (!valIsPrimitive) {
@@ -497,9 +497,8 @@ function repeatHandler(linkContext, newArr, oldArr, arrayOpInfo) {
 var showHanlder = showHideGen(true);
 var hideHanlder = showHideGen(false);
 function showHideGen(isShow) {
-  return function handler(linkContext) {
-    var value = linkContext.value;
-    var el = linkContext.el;
+  return function handler(value) {
+    var el = this.el;
     if (isShow && value || !isShow && !value) {
       removeClass(el, 'x-hide');
       el.style.display = '';
@@ -660,11 +659,10 @@ function filterFnGen(str, fromTextNode) {
     return fromTextNode ? evalTextNodeFilter(str, model) : evalExprFilter(str, model);
   }
 }
-function genLinkCb(context) {
+function makeUIHandler(context) {
   var fn = drm[context.directive];
   return function(newVal, oldVal, op) {
-    context.value = newVal;
-    return fn(context, newVal, oldVal, op);
+    return fn.call(context, newVal, oldVal, op);
   }
 }
 var LinkContext = function LinkContext(el, directive, linker) {
@@ -675,7 +673,7 @@ var LinkContext = function LinkContext(el, directive, linker) {
 LinkContext.prototype.clone = function clone (el, linker) {
   var cloned = new LinkContext(el, this.directive, linker);
   extend(cloned, this, true);
-  cloned.watcher = Watcher.get(this.watcher.getter, linker, genLinkCb(cloned));
+  cloned.watcher = Watcher.get(this.watcher.getter, linker, makeUIHandler(cloned));
   linker._watchers.push(cloned.watcher);
   if (this.directive === 'x-model') {
     setModelReact(cloned);
@@ -686,9 +684,9 @@ LinkContext.create = function create (el, directive, expr, text, linker, collect
   var is2Way = directive === 'x-model';
   var context = new LinkContext(el, directive, linker);
   if (!text) {
-    context.watcher = Watcher.get(directive !== 'x-bind' ? expr : filterFnGen(expr, false), linker, genLinkCb(context));
+    context.watcher = Watcher.get(directive !== 'x-bind' ? expr : filterFnGen(expr, false), linker, makeUIHandler(context));
   } else {
-    context.watcher = Watcher.get(hasFilter(text, true) ? filterFnGen(text, true) : ("\"" + text + "\"").replace(leftBracket, '"+(').replace(rightBracket, ')+"'), linker, genLinkCb(context));
+    context.watcher = Watcher.get(hasFilter(text, true) ? filterFnGen(text, true) : ("\"" + text + "\"").replace(leftBracket, '"+(').replace(rightBracket, ')+"'), linker, makeUIHandler(context));
   }
   if (is2Way) {
     context.setPath = modelSetter(expr);

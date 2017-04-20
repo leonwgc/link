@@ -1,16 +1,15 @@
 import { addClass, removeClass } from '../modules/helper';
 
-export default function classHandler(linkContext) {
-  var exprVal = linkContext.value;
-  if (linkContext.className) {
-    if (exprVal) {
-      addClass(linkContext.el, linkContext.className);
+export default function classHandler(value) {
+  if (this.className) {
+    if (value) {
+      addClass(this.el, this.className);
     } else {
-      removeClass(linkContext.el, linkContext.className);
+      removeClass(this.el, this.className);
     }
   } else {
-    if (exprVal) {
-      addClass(linkContext.el, exprVal);
+    if (value) {
+      addClass(this.el, value);
     }
   }
 }
