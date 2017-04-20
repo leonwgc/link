@@ -1,5 +1,5 @@
 import { glob } from './var';
-import { trim, loadTemplate, isFunction, each, parsePath } from './helper';
+import { trim, loadTemplate, isFunction, each, parsePath, extend } from './helper';
 import Link from './linker';
 
 export function registerComponent(config) {
@@ -20,7 +20,7 @@ export default function renderComponent(linker, com) {
     el = com.el;
   if (!template) {
     if (config.templateUrl) {
-      loadTemplate(linker._comTplStore, config.templateUrl, function (tpl) {
+      loadTemplate(linker._comTplStore, config.templateUrl, function(tpl) {
         linkCom(linker, el, config, tpl);
       });
     }
@@ -29,19 +29,21 @@ export default function renderComponent(linker, com) {
   }
 }
 
-function linkCom(linker, el, config, tpl) {
-  if (!isFunction(config.model)) {
-    throw new Error('component model must be a function to return a model data');
-  }
-  var model = config.model();
-  var methods = config.methods || {};
+function linkCom(linker, el, comConfig, tpl) {
   el.innerHTML = tpl;
   if (el.children.length > 1) {
     throw new Error('component can only have one root element');
   }
+  var config = extend({}, comConfig);
+  if (config.model && typeof config.model !== 'function') {
+    throw new Error('component model must be a function to return a model data');
+  }
+  var model = config.model = config.model();
+  var methods = config.methods || {};
+  config.el = el.children[0];
   if (Array.isArray(config.props)) {
     let parentProp, parentPropVal;
-    each(config.props, function (prop) {
+    config.props.forEach(prop => {
       parentProp = el.getAttribute(prop).trim();
       if (isFunction(linker.model[parentProp])) {
         methods[prop] = linker.model[parentProp];
@@ -50,16 +52,11 @@ function linkCom(linker, el, config, tpl) {
         if (parentPropVal !== model[prop]) {
           model[prop] = parentPropVal;
         }
-        linker.watch(parentProp, function (n) {
+        linker.watch(parentProp, function(n) {
           model[prop] = n;
         });
       }
     });
   }
-
-  var comLinker = new Link({ el: el.children[0], model: model, methods: methods });
-
-  if (isFunction(config.postLink)) {
-    config.postLink.call(model, comLinker, config);
-  }
+  linker._children.push(new Link(config));
 }

@@ -968,6 +968,7 @@ function observe(obj) {
   return dep;
 }
 
+var LifeCycles = ['created'];
 var Link = function Link(config) {
   this.el = isString(config.el) ? document.querySelector(config.el) : config.el;
   this.model = config.model || {};
@@ -981,6 +982,7 @@ var Link = function Link(config) {
   this._routeEl = null;
   this._comCollection = [];
   this._unlinked = false;
+  this._initLifeCycleHooks(config);
   this._bootstrap();
   if (this._routes) {
     this._routeTplStore = Object.create(null);
@@ -990,6 +992,20 @@ var Link = function Link(config) {
     this._comTplStore = Object.create(null);
     this._renderComponent();
   }
+  if (this.created) {
+    this.created.call(this);
+  }
+};
+Link.prototype._initLifeCycleHooks = function _initLifeCycleHooks (config) {
+  var hook, linker = this;
+  Object.keys(config).forEach(function (key) {
+    if (LifeCycles.indexOf(key) > -1) {
+      hook = config[key];
+      if (typeof hook === 'function') {
+        linker[key] = hook;
+      }
+    }
+  });
 };
 Link.prototype._bootstrap = function _bootstrap () {
   observe(this.model);
@@ -1076,7 +1092,7 @@ function renderComponent(linker, com) {
     el = com.el;
   if (!template) {
     if (config.templateUrl) {
-      loadTemplate(linker._comTplStore, config.templateUrl, function (tpl) {
+      loadTemplate(linker._comTplStore, config.templateUrl, function(tpl) {
         linkCom(linker, el, config, tpl);
       });
     }
@@ -1084,19 +1100,21 @@ function renderComponent(linker, com) {
     linkCom(linker, el, config, template);
   }
 }
-function linkCom(linker, el, config, tpl) {
-  if (!isFunction(config.model)) {
-    throw new Error('component model must be a function to return a model data');
-  }
-  var model = config.model();
-  var methods = config.methods || {};
+function linkCom(linker, el, comConfig, tpl) {
   el.innerHTML = tpl;
   if (el.children.length > 1) {
     throw new Error('component can only have one root element');
   }
+  var config = extend({}, comConfig);
+  if (config.model && typeof config.model !== 'function') {
+    throw new Error('component model must be a function to return a model data');
+  }
+  var model = config.model = config.model();
+  var methods = config.methods || {};
+  config.el = el.children[0];
   if (Array.isArray(config.props)) {
     var parentProp, parentPropVal;
-    each(config.props, function (prop) {
+    config.props.forEach(function (prop) {
       parentProp = el.getAttribute(prop).trim();
       if (isFunction(linker.model[parentProp])) {
         methods[prop] = linker.model[parentProp];
@@ -1105,16 +1123,13 @@ function linkCom(linker, el, config, tpl) {
         if (parentPropVal !== model[prop]) {
           model[prop] = parentPropVal;
         }
-        linker.watch(parentProp, function (n) {
+        linker.watch(parentProp, function(n) {
           model[prop] = n;
         });
       }
     });
   }
-  var comLinker = new Link({ el: el.children[0], model: model, methods: methods });
-  if (isFunction(config.postLink)) {
-    config.postLink.call(model, comLinker, config);
-  }
+  linker._children.push(new Link(config));
 }
 
 function link$1(config) {

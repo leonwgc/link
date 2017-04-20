@@ -7,6 +7,8 @@ import { LinkContext } from './linkContext';
 import { Watcher } from './watcher';
 import observe from './observer';
 
+const LifeCycles = ['created'];
+
 export default class Link {
   constructor(config) {
     this.el = isString(config.el) ? document.querySelector(config.el) : config.el;
@@ -21,6 +23,7 @@ export default class Link {
     this._routeEl = null;
     this._comCollection = [];
     this._unlinked = false;
+    this._initLifeCycleHooks(config);
     this._bootstrap();
 
     if (this._routes) {
@@ -31,6 +34,22 @@ export default class Link {
       this._comTplStore = Object.create(null);
       this._renderComponent();
     }
+    //created 
+    if (this.created) {
+      this.created.call(this);
+    }
+  }
+
+  _initLifeCycleHooks(config) {
+    var hook, linker = this;
+    Object.keys(config).forEach(key => {
+      if (LifeCycles.indexOf(key) > -1) {
+        hook = config[key];
+        if (typeof hook === 'function') {
+          linker[key] = hook;
+        }
+      }
+    });
   }
 
   _bootstrap() {

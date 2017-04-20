@@ -48,24 +48,38 @@ function registerPagerCom() {
 
   link.com({
     tag: 'pager',
-    model: function () {
+    model: function() {
       return model;
     },
     props: props,
     templateUrl: 'views/pager.html',
-    postLink: function (linker) {
-      renderPageNumbers(this);
-      linker.watch('pageCount', function () {
+    created: function() {
+      renderPageNumbers(this.model);
+      this.watch('pageCount', function() {
         this.page = 1;
         renderPageNumbers(this);
       });
 
-      linker.watch('page', function () {
+      this.watch('page', function() {
         renderPageNumbers(this);
         if (typeof this.pageChange === 'function') {
           this.pageChange(this.page);
         }
       });
-    }
+    },
+    // postLink: function(linker) {
+    //   renderPageNumbers(this);
+    //   linker.watch('pageCount', function() {
+    //     this.page = 1;
+    //     renderPageNumbers(this);
+    //   });
+
+    //   linker.watch('page', function() {
+    //     renderPageNumbers(this);
+    //     if (typeof this.pageChange === 'function') {
+    //       this.pageChange(this.page);
+    //     }
+    //   });
+    // }
   });
 }
