@@ -1,4 +1,4 @@
-import { addEventListenerHandler, trim, loadTemplate, isFunction, isObject } from './helper';
+import { trim, loadTemplate, isFunction, isObject } from './helper';
 import Link from './linker';
 
 export function hash(path) {
@@ -24,7 +24,11 @@ function replaceHash(path) {
 export function configRoutes(linker) {
   var routes = linker._routes.routes;
   var defaultPath = linker._routes.defaultPath;
-  addEventListenerHandler(window, 'hashchange', renderRouter, linker._eventStore);
+  linker._eventInfos.unshift({
+    el: window,
+    name: 'hashchange',
+    handler: renderRouter
+  });
   renderRouter();
 
   function renderRouter() {
@@ -39,7 +43,7 @@ export function configRoutes(linker) {
     var template = trim(route.template);
     if (!template) {
       if (route.templateUrl) {
-        loadTemplate(linker._routeTplStore, route.templateUrl, function(tpl) {
+        loadTemplate(linker._routeTplStore, route.templateUrl, function (tpl) {
           linkRoute(linker, route, tpl);
         });
       } else {

@@ -66,21 +66,6 @@ function extend(target, src, keepExist) {
   });
   return target;
 }
-function addEventListenerHandler(el, event, func, store) {
-  if (el.addEventListener) {
-    el.addEventListener(event, func, false);
-    store.push({
-      el: el,
-      event: event,
-      handler: func
-    });
-  }
-}
-function removeEventListenerHandler(el, event, func) {
-  if (el.removeEventListener) {
-    el.removeEventListener(event, func, false);
-  }
-}
 function loadTemplate(templateStore, url, cb) {
   var tpl = templateStore[url];
   if (tpl) {
@@ -100,7 +85,6 @@ function loadTemplate(templateStore, url, cb) {
     xhr.send(null);
   }
 }
-
 function parsePath(str) {
   var spliter = str.split('.'), len = spliter.length, last = spliter[len - 1];
   return function(model, val) {
@@ -140,7 +124,11 @@ function replaceHash(path) {
 function configRoutes(linker) {
   var routes = linker._routes.routes;
   var defaultPath = linker._routes.defaultPath;
-  addEventListenerHandler(window, 'hashchange', renderRouter, linker._eventStore);
+  linker._eventInfos.unshift({
+    el: window,
+    name: 'hashchange',
+    handler: renderRouter
+  });
   renderRouter();
   function renderRouter() {
     var route = routes[hash()];
@@ -154,7 +142,7 @@ function configRoutes(linker) {
     var template = trim(route.template);
     if (!template) {
       if (route.templateUrl) {
-        loadTemplate(linker._routeTplStore, route.templateUrl, function(tpl) {
+        loadTemplate(linker._routeTplStore, route.templateUrl, function (tpl) {
           linkRoute(linker, route, tpl);
         });
       } else {
@@ -199,7 +187,11 @@ function commonReact(linkContext, event) {
   function commonHandler() {
     linkContext.setPath(linkContext.el.value);
   }
-  addEventListenerHandler(linkContext.el, event, commonHandler, linkContext.linker._eventStore);
+  linkContext.linker._eventInfos.unshift({
+    el: linkContext.el,
+    name: event,
+    handler: commonHandler
+  });
 }
 
 function checkboxReact(linkContext) {
@@ -222,7 +214,11 @@ function checkboxReact(linkContext) {
       throw new Error('checkbox should bind with array or boolean value');
     }
   }
-  addEventListenerHandler(el, 'click', checkboxHandler, linkContext.linker._eventStore);
+  linkContext.linker._eventInfos.unshift({
+    el: el,
+    name: 'click',
+    handler: checkboxHandler
+  });
 }
 
 function setModelReact(linkContext) {
@@ -712,17 +708,10 @@ function getExprFn$1(expr) {
 }
 function genEventFn(expr, model) {
   var fn = getExprFn$1(expr);
-  return function(ev) {
+  return function (ev) {
     fn(model, ev);
   }
 }
-var EventInfo = function EventInfo(name, expr) {
-  this.name = name;
-  this.expr = expr;
-};
-EventInfo.get = function get (name, expr) {
-  return new EventInfo(name, expr);
-};
 function getLinkContextsFromInterpolation(linker, el, text, collector) {
   return LinkContext.create(el, 'x-bind', null, text, linker, collector);
 }
@@ -731,7 +720,7 @@ function getClassLinkContext(linker, el, directive, expr, collector) {
     spliter,
     linkContext;
   var contexts = [];
-  each(kvPairs, function(kv) {
+  each(kvPairs, function (kv) {
     spliter = kv.split(':');
     var linkContext = LinkContext.create(el, directive, spliter[1].trim(), null, linker, collector);
     linkContext.className = spliter[0].trim();
@@ -755,16 +744,20 @@ function applyDirs(node, linker) {
   if (linker._dirs.length) {
     var dir = linker._dirs.shift();
     if (dir) {
-      each(dir, function(o) {
+      each(dir, function (o) {
         if (o instanceof LinkContext) {
           o.clone(node, linker);
         } else {
-          addEventListenerHandler(node, o.name, genEventFn(o.expr, linker.model), linker._eventStore);
+          linker._eventInfos.push({
+            el: node,
+            name: o.name,
+            handler: genEventFn(o.expr, linker.model)
+          });
         }
       });
     }
     if (node.nodeType === 1) {
-      each(node.childNodes, function(n) {
+      each(node.childNodes, function (n) {
         applyDirs(n, linker);
       });
     }
@@ -809,7 +802,7 @@ function compile(linker, el, collector) {
         linker._routeEl = el;
         return;
       }
-      each(el.attributes, function(attr) {
+      each(el.attributes, function (attr) {
         attrName = attr.name;
         attrValue = attr.value.trim();
         if (drm[attrName]) {
@@ -819,9 +812,13 @@ function compile(linker, el, collector) {
           }
         } else if (attrName[0] === eventPrefix) {
           if (!collector) {
-            addEventListenerHandler(el, attrName.slice(1), genEventFn(attrValue, linker.model), linker._eventStore);
+            linker._eventInfos.push({
+              el: el,
+              name: attrName.slice(1),
+              handler: genEventFn(attrValue, linker.model)
+            });
           } else {
-            dirs.push(EventInfo.get(attrName.slice(1), attrValue));
+            dirs.push({ name: attrName.slice(1), expr: attrValue });
           }
         }
       });
@@ -839,7 +836,7 @@ function compile(linker, el, collector) {
     if (collector) {
       collector.push(dirs.length ? dirs : null);
     }
-    each(el.childNodes, function(node) {
+    each(el.childNodes, function (node) {
       compile(linker, node, collector);
     });
   } else if (nodeType === 3) {
@@ -851,7 +848,7 @@ function compile(linker, el, collector) {
       collector.push(dirs.length ? dirs : null);
     }
   } else if (nodeType === 9) {
-    each(el.childNodes, function(node) {
+    each(el.childNodes, function (node) {
       compile(linker, node);
     });
   }
@@ -976,7 +973,7 @@ var Link = function Link(config) {
   this._routes = config.routes;
   this._dirs = config.dirs;
   this._computed = config.computed;
-  this._eventStore = [];
+  this._eventInfos = [];
   this._watchers = [];
   this._children = [];
   this._routeEl = null;
@@ -995,6 +992,7 @@ var Link = function Link(config) {
   if (this.created) {
     this.created.call(this);
   }
+  this._bindEvents();
 };
 Link.prototype._initLifeCycleHooks = function _initLifeCycleHooks (config) {
   var hook, linker = this;
@@ -1006,6 +1004,13 @@ Link.prototype._initLifeCycleHooks = function _initLifeCycleHooks (config) {
       }
     }
   });
+};
+Link.prototype._bindEvents = function _bindEvents () {
+  this._eventInfos.forEach(function (e) { return e.el.addEventListener(e.name, e.handler, false); });
+};
+Link.prototype._unbindEvents = function _unbindEvents () {
+  this._eventInfos.forEach(function (e) { return e.el.removeEventListener(e.name, e.handler, false); });
+  this._eventInfos.length = 0;
 };
 Link.prototype._bootstrap = function _bootstrap () {
   observe(this.model);
@@ -1037,7 +1042,7 @@ Link.prototype._addComputed = function _addComputed () {
 };
 Link.prototype._makeComputedGetter = function _makeComputedGetter (getter) {
   var watcher = Watcher.get(getter, this, null).getDeps();
-  return function() {
+  return function () {
     if (watcher.dirty || Watcher.target) {
       watcher.getValue();
       watcher.dirty = false;
@@ -1047,7 +1052,7 @@ Link.prototype._makeComputedGetter = function _makeComputedGetter (getter) {
 };
 Link.prototype._renderComponent = function _renderComponent () {
   var linker = this;
-  each(this._comCollection, function(com) {
+  each(this._comCollection, function (com) {
     renderComponent(linker, com);
   });
 };
@@ -1067,10 +1072,7 @@ Link.prototype.unlink = function unlink () {
     this._comCollection.length = 0;
     this._children.forEach(function (child) { return child.unlink(); });
     this._watchers.forEach(function (item) { return item.dead = true; });
-    each(this._eventStore, function(event) {
-      removeEventListenerHandler(event.el, event.event, event.handler);
-    });
-    this._eventStore.length = 0;
+    this._unbindEvents();
     this.model = null;
   }
 };

@@ -41,7 +41,7 @@ link.filter('pluralize', function(n) {
   return n <= 1 ? 'item' : 'items'
 });
 
-var n = performance.now();
+// var n = performance.now();
 var linker = link({
 
   // the root element that will be compiled
@@ -162,4 +162,4 @@ function onHashChange() {
 window.addEventListener('hashchange', onHashChange)
 onHashChange();
 
-console.log(performance.now() - n);
+// console.log(performance.now() - n);

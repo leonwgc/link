@@ -1,7 +1,7 @@
 import { configRoutes } from './route';
 import compile, { applyDirs } from './compile';
 import { glob } from './var';
-import { extend, removeEventListenerHandler, each, isString } from './helper';
+import { extend, each, isString } from './helper';
 import renderComponent from './com';
 import { LinkContext } from './linkContext';
 import { Watcher } from './watcher';
@@ -17,7 +17,7 @@ export default class Link {
     this._routes = config.routes;
     this._dirs = config.dirs;
     this._computed = config.computed;
-    this._eventStore = [];
+    this._eventInfos = [];
     this._watchers = [];
     this._children = [];
     this._routeEl = null;
@@ -38,6 +38,7 @@ export default class Link {
     if (this.created) {
       this.created.call(this);
     }
+    this._bindEvents();
   }
 
   _initLifeCycleHooks(config) {
@@ -50,6 +51,15 @@ export default class Link {
         }
       }
     });
+  }
+
+  _bindEvents() {
+    this._eventInfos.forEach(e => e.el.addEventListener(e.name, e.handler, false));
+  }
+
+  _unbindEvents() {
+    this._eventInfos.forEach(e => e.el.removeEventListener(e.name, e.handler, false));
+    this._eventInfos.length = 0;
   }
 
   _bootstrap() {
@@ -83,7 +93,7 @@ export default class Link {
 
   _makeComputedGetter(getter) {
     var watcher = Watcher.get(getter, this, null).getDeps();
-    return function() {
+    return function () {
       if (watcher.dirty || Watcher.target) {
         watcher.getValue();
         watcher.dirty = false;
@@ -94,7 +104,7 @@ export default class Link {
 
   _renderComponent() {
     var linker = this;
-    each(this._comCollection, function(com) {
+    each(this._comCollection, function (com) {
       renderComponent(linker, com);
     });
   }
@@ -117,10 +127,7 @@ export default class Link {
       this._comCollection.length = 0;
       this._children.forEach(child => child.unlink());
       this._watchers.forEach(item => item.dead = true);
-      each(this._eventStore, function(event) {
-        removeEventListenerHandler(event.el, event.event, event.handler);
-      });
-      this._eventStore.length = 0;
+      this._unbindEvents();
       this.model = null;
     }
   }

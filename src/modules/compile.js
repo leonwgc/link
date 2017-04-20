@@ -1,5 +1,5 @@
 import { LinkContext } from './linkContext';
-import { each, trim, isLikeJson, addEventListenerHandler, getCacheFn } from './helper';
+import { each, trim, isLikeJson, getCacheFn } from './helper';
 import { eventPrefix, glob, testInterpolationRegex, spaceRegex } from './var';
 import drm from '../directives/index';
 import setModelReact from '../modelReact/index';
@@ -12,19 +12,8 @@ function getExprFn(expr) {
 
 function genEventFn(expr, model) {
   var fn = getExprFn(expr);
-  return function(ev) {
+  return function (ev) {
     fn(model, ev);
-  }
-}
-
-class EventInfo {
-  constructor(name, expr) {
-    this.name = name;
-    this.expr = expr;
-  }
-
-  static get(name, expr) {
-    return new EventInfo(name, expr);
   }
 }
 
@@ -39,7 +28,7 @@ function getClassLinkContext(linker, el, directive, expr, collector) {
 
   var contexts = [];
 
-  each(kvPairs, function(kv) {
+  each(kvPairs, function (kv) {
     spliter = kv.split(':');
     var linkContext = LinkContext.create(el, directive, spliter[1].trim(), null, linker, collector);
     linkContext.className = spliter[0].trim();
@@ -66,16 +55,20 @@ export function applyDirs(node, linker) {
   if (linker._dirs.length) {
     var dir = linker._dirs.shift();
     if (dir) {
-      each(dir, function(o) {
+      each(dir, function (o) {
         if (o instanceof LinkContext) {
           o.clone(node, linker);
         } else {
-          addEventListenerHandler(node, o.name, genEventFn(o.expr, linker.model), linker._eventStore);
+          linker._eventInfos.push({
+            el: node,
+            name: o.name,
+            handler: genEventFn(o.expr, linker.model)
+          });
         }
       });
     }
     if (node.nodeType === 1) {
-      each(node.childNodes, function(n) {
+      each(node.childNodes, function (n) {
         applyDirs(n, linker);
       });
     }
@@ -126,7 +119,7 @@ export default function compile(linker, el, collector) {
         return;
       }
 
-      each(el.attributes, function(attr) {
+      each(el.attributes, function (attr) {
         attrName = attr.name;
         attrValue = attr.value.trim();
         if (drm[attrName]) {
@@ -136,9 +129,13 @@ export default function compile(linker, el, collector) {
           }
         } else if (attrName[0] === eventPrefix) {
           if (!collector) {
-            addEventListenerHandler(el, attrName.slice(1), genEventFn(attrValue, linker.model), linker._eventStore);
+            linker._eventInfos.push({
+              el: el,
+              name: attrName.slice(1),
+              handler: genEventFn(attrValue, linker.model)
+            });
           } else {
-            dirs.push(EventInfo.get(attrName.slice(1), attrValue));
+            dirs.push({ name: attrName.slice(1), expr: attrValue });
           }
         }
       });
@@ -157,7 +154,7 @@ export default function compile(linker, el, collector) {
     if (collector) {
       collector.push(dirs.length ? dirs : null);
     }
-    each(el.childNodes, function(node) {
+    each(el.childNodes, function (node) {
       compile(linker, node, collector);
     });
   } else if (nodeType === 3) {
@@ -169,7 +166,7 @@ export default function compile(linker, el, collector) {
       collector.push(dirs.length ? dirs : null);
     }
   } else if (nodeType === 9) {
-    each(el.childNodes, function(node) {
+    each(el.childNodes, function (node) {
       compile(linker, node);
     });
   }

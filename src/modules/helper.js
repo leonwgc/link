@@ -55,23 +55,6 @@ export function extend(target, src, keepExist) {
   return target;
 }
 
-export function addEventListenerHandler(el, event, func, store) {
-  if (el.addEventListener) {
-    el.addEventListener(event, func, false);
-    store.push({
-      el: el,
-      event: event,
-      handler: func
-    });
-  }
-}
-
-export function removeEventListenerHandler(el, event, func) {
-  if (el.removeEventListener) {
-    el.removeEventListener(event, func, false);
-  }
-}
-
 export function loadTemplate(templateStore, url, cb) {
   var tpl = templateStore[url];
   if (tpl) {
@@ -115,14 +98,6 @@ export function loadTemplate(templateStore, url, cb) {
 //   }
 // }
 
-export function debounce(fn) {
-  var timer = 0;
-  return function debounceFn() {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(fn);
-  }
-}
-
 export function parsePath(str) {
   const spliter = str.split('.'), len = spliter.length, last = spliter[len - 1];
   return function(model, val) {
@@ -130,7 +105,6 @@ export function parsePath(str) {
     for (var i = 0; i < len - 1; i++) {
       v = v[spliter[i]];
     }
-    // return v[last];
     return arguments.length === 1 ? v[last] : (v[last] = val, undefined);
   }
 }

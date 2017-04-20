@@ -38,7 +38,7 @@
         <li><a href="#/active" x-class="{ selected: visibility == 'active' }">Active</a></li>
         <li><a href="#/completed" x-class="{ selected: visibility == 'completed' }">Completed</a></li>
       </ul>
-      <button class="clear-completed" @click="removeCompleted()" x-show="todos.length > remaining">
+      <button type="button" class="clear-completed" @click="removeCompleted()" x-show="todos.length > remaining">
           Clear completed
         </button>
     </footer>

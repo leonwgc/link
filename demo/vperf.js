@@ -12,8 +12,8 @@ for (var i = 0; i < 600; i++) {
 }
 var timerId = 'demo';
 console.time(timerId);
-var linker = link({
+var v = new Vue({
   el: '.t1',
-  model: model
+  data: model
 });
 console.timeEnd(timerId);

@@ -1,4 +1,4 @@
-import { addEventListenerHandler, isBoolean } from '../modules/helper';
+import { isBoolean } from '../modules/helper';
 export default function checkboxReact(linkContext) {
   var el = linkContext.el;
   function checkboxHandler() {
@@ -20,5 +20,9 @@ export default function checkboxReact(linkContext) {
       throw new Error('checkbox should bind with array or boolean value');
     }
   }
-  addEventListenerHandler(el, 'click', checkboxHandler, linkContext.linker._eventStore);
+  linkContext.linker._eventInfos.unshift({
+    el: el,
+    name: 'click',
+    handler: checkboxHandler
+  });
 }
