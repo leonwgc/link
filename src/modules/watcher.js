@@ -1,4 +1,4 @@
-import { getCacheFn, isFunction, parsePath, each } from './helper';
+import { getCacheFn, isFunction, parsePath, each, nextTick } from './helper';
 import drm from '../directives/index';
 import { LinkContext } from './linkContext';
 
@@ -58,10 +58,6 @@ export class Watcher {
     Watcher.run(this);
   }
 
-  // notify(oldValue, arrayOpInfo) {
-  //   this.cb.call(this.model, this.value, oldValue, arrayOpInfo);
-  // }
-
   static get(exprOrFn, linker, cb, deep) {
     return new Watcher(exprOrFn, linker, cb, deep);
   }
@@ -71,7 +67,7 @@ Watcher.target = null;
 const queue = [];
 let waiting = false;
 
-Watcher.run = function(watcher) {
+Watcher.run = function (watcher) {
   if (link.sync) {
     watcher.update();
     return;
@@ -81,7 +77,7 @@ Watcher.run = function(watcher) {
     queue.push(watcher);
     if (!waiting) {
       waiting = true;
-      setTimeout(() => {
+      nextTick(() => {
         for (var i = 0, item; i < queue.length; i++) {
           item = queue[i];
           item.waiting = false;
@@ -89,7 +85,7 @@ Watcher.run = function(watcher) {
         }
         queue.length = 0;
         waiting = false;
-      }, 0);
+      });
     }
   }
 }

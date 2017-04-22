@@ -10,6 +10,6 @@ export const testInterpolationRegex = /\{\{[^\}]+\}\}/;
 export const interpilationExprRegex = /\{\{([^\}]+)\}\}/g;
 export const spaceRegex = /\s+/;
 export const eventPrefix = '@';
+export const attrPrefix = ':';
 export const interceptArrayMethods = ['push', 'pop', 'unshift', 'shift', 'reverse', 'sort', 'splice'];
 export const filters = Object.create(null);
-export const newFunCacheKey = 'NEWFUNCACHE';

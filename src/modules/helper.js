@@ -1,4 +1,3 @@
-import { newFunCacheKey } from './var';
 export function isObject(obj) {
   return !!obj && typeof obj === 'object';
 }
@@ -47,7 +46,7 @@ export function each(arr, fn) {
 }
 
 export function extend(target, src, keepExist) {
-  each(Object.keys(src), function(prop) {
+  each(Object.keys(src), function (prop) {
     if (!target[prop] || !keepExist) {
       target[prop] = src[prop];
     }
@@ -61,7 +60,7 @@ export function loadTemplate(templateStore, url, cb) {
     cb(tpl);
   } else {
     var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
           templateStore[url] = trim(xhr.responseText);
@@ -100,7 +99,7 @@ export function loadTemplate(templateStore, url, cb) {
 
 export function parsePath(str) {
   const spliter = str.split('.'), len = spliter.length, last = spliter[len - 1];
-  return function(model, val) {
+  return function (model, val) {
     var v = model;
     for (var i = 0; i < len - 1; i++) {
       v = v[spliter[i]];
@@ -117,4 +116,16 @@ export function getCacheFn(model, expr) {
 
 export function getExprFn(expr) {
   return new Function('t', `with(t){ return ${expr};}`);
+}
+
+export let nextTick;
+if (typeof Promise !== 'undefined' && typeof Promise.resolve === 'function') {
+  const resolved = Promise.resolve();
+  nextTick = function (f) {
+    return resolved.then(f).catch(err => { throw err; });
+  }
+} else {
+  nextTick = function (f) {
+    setTimeout(f, 0);
+  }
 }

@@ -12,7 +12,7 @@
 <body>
   <div class="main" id='main'>
     <table class="table">
-      <tr x-for='msg in messages' @click='msg.focus=!msg.focus' x-class='{hilight:msg.focus}'>
+      <tr x-for='msg in messages' @click='msg.focus=!msg.focus' :id='msg.id' x-class='{hilight:msg.focus}'>
         <td class="t1">{{msg.title}}</td>
         <td class="t2">{{msg.body}}</td>
         <td class="t3">{{msg.time}}</td>

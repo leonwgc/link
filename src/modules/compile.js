@@ -1,19 +1,19 @@
 import { LinkContext } from './linkContext';
 import { each, trim, isLikeJson, getCacheFn } from './helper';
-import { eventPrefix, glob, testInterpolationRegex, spaceRegex } from './var';
+import { eventPrefix, attrPrefix, glob, testInterpolationRegex, spaceRegex } from './var';
 import drm from '../directives/index';
 import setModelReact from '../modelReact/index';
 
 const exprEvFnCache = Object.create(null);
 
 function getExprFn(expr) {
-  return exprEvFnCache[expr] || (exprEvFnCache[expr] = new Function('m', '$event', `with(m){${expr}}`));
+  return exprEvFnCache[expr] || (exprEvFnCache[expr] = new Function('m', '$event', '$el', `with(m){${expr}}`));
 }
 
-function genEventFn(expr, model) {
+function genEventFn(expr, model, el) {
   var fn = getExprFn(expr);
   return function (ev) {
-    fn(model, ev);
+    fn(model, ev, el);
   }
 }
 
@@ -62,7 +62,7 @@ export function applyDirs(node, linker) {
           linker._eventInfos.push({
             el: node,
             name: o.name,
-            handler: genEventFn(o.expr, linker.model)
+            handler: genEventFn(o.expr, linker.model, node)
           });
         }
       });
@@ -127,15 +127,25 @@ export default function compile(linker, el, collector) {
           if (collector) {
             dirs = dirs.concat(contexts);
           }
-        } else if (attrName[0] === eventPrefix) {
-          if (!collector) {
-            linker._eventInfos.push({
-              el: el,
-              name: attrName.slice(1),
-              handler: genEventFn(attrValue, linker.model)
-            });
-          } else {
-            dirs.push({ name: attrName.slice(1), expr: attrValue });
+        } else {
+          var prefix = attrName[0];
+          if (prefix === eventPrefix) {
+            if (!collector) {
+              linker._eventInfos.push({
+                el: el,
+                name: attrName.slice(1),
+                handler: genEventFn(attrValue, linker.model, el)
+              });
+            } else {
+              dirs.push({ name: attrName.slice(1), expr: attrValue });
+            }
+          } else if (prefix === attrPrefix) {
+            // var contexts = getLinkContext(linker, el, attrName.slice(1), attrValue, collector, true);
+            linkContext = LinkContext.create(el, attrName.slice(1), attrValue, null, linker, collector, true);
+            // contexts.push(linkContext);
+            if (collector) {
+              dirs.push(linkContext);
+            }
           }
         }
       });

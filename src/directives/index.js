@@ -5,6 +5,7 @@ import modelHandler from './model';
 import readonlyHandler from './readonly';
 import repeatHandler from './repeat';
 import { showHanlder, hideHanlder } from './showhide';
+import attrHandler from './attr';
 
 export default {
   'x-show': showHanlder,
@@ -14,5 +15,6 @@ export default {
   'x-for': repeatHandler,
   'x-class': classHandler,
   'x-model': modelHandler,
-  'x-readonly': readonlyHandler
+  'x-readonly': readonlyHandler,
+  ':': attrHandler
 };

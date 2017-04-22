@@ -17,6 +17,7 @@ var testInterpolationRegex = /\{\{[^\}]+\}\}/;
 var interpilationExprRegex = /\{\{([^\}]+)\}\}/g;
 var spaceRegex = /\s+/;
 var eventPrefix = '@';
+var attrPrefix = ':';
 var interceptArrayMethods = ['push', 'pop', 'unshift', 'shift', 'reverse', 'sort', 'splice'];
 var filters = Object.create(null);
 
@@ -59,7 +60,7 @@ function each(arr, fn) {
   }
 }
 function extend(target, src, keepExist) {
-  each(Object.keys(src), function(prop) {
+  each(Object.keys(src), function (prop) {
     if (!target[prop] || !keepExist) {
       target[prop] = src[prop];
     }
@@ -72,7 +73,7 @@ function loadTemplate(templateStore, url, cb) {
     cb(tpl);
   } else {
     var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
           templateStore[url] = trim(xhr.responseText);
@@ -87,7 +88,7 @@ function loadTemplate(templateStore, url, cb) {
 }
 function parsePath(str) {
   var spliter = str.split('.'), len = spliter.length, last = spliter[len - 1];
-  return function(model, val) {
+  return function (model, val) {
     var v = model;
     for (var i = 0; i < len - 1; i++) {
       v = v[spliter[i]];
@@ -101,6 +102,17 @@ function getCacheFn(model, expr) {
 }
 function getExprFn(expr) {
   return new Function('t', ("with(t){ return " + expr + ";}"));
+}
+var nextTick;
+if (typeof Promise !== 'undefined' && typeof Promise.resolve === 'function') {
+  var resolved = Promise.resolve();
+  nextTick = function (f) {
+    return resolved.then(f).catch(function (err) { throw err; });
+  };
+} else {
+  nextTick = function (f) {
+    setTimeout(f, 0);
+  };
 }
 
 function hash(path) {
@@ -505,6 +517,10 @@ function showHideGen(isShow) {
   }
 }
 
+function attrHandler(value) {
+  this.el.setAttribute(this.directive, value);
+}
+
 var drm = {
   'x-show': showHanlder,
   'x-hide': hideHanlder,
@@ -513,7 +529,8 @@ var drm = {
   'x-for': repeatHandler,
   'x-class': classHandler,
   'x-model': modelHandler,
-  'x-readonly': readonlyHandler
+  'x-readonly': readonlyHandler,
+  ':': attrHandler
 };
 
 var path = /^[\w$]+(\.[\w$]+)*$/;
@@ -570,7 +587,7 @@ Watcher.get = function get (exprOrFn, linker, cb, deep) {
 Watcher.target = null;
 var queue = [];
 var waiting = false;
-Watcher.run = function(watcher) {
+Watcher.run = function (watcher) {
   if (link.sync) {
     watcher.update();
     return;
@@ -580,7 +597,7 @@ Watcher.run = function(watcher) {
     queue.push(watcher);
     if (!waiting) {
       waiting = true;
-      setTimeout(function () {
+      nextTick(function () {
         for (var i = 0, item; i < queue.length; i++) {
           item = queue[i];
           item.waiting = false;
@@ -588,7 +605,7 @@ Watcher.run = function(watcher) {
         }
         queue.length = 0;
         waiting = false;
-      }, 0);
+      });
     }
   }
 };
@@ -651,20 +668,21 @@ function checkFilter(text) {
 var leftBracket = /(\{\{)/g;
 var rightBracket = /(\}\})/g;
 function filterFnGen(str, fromTextNode) {
-  return function(model) {
+  return function (model) {
     return fromTextNode ? evalTextNodeFilter(str, model) : evalExprFilter(str, model);
   }
 }
 function makeUIHandler(context) {
-  var fn = drm[context.directive];
-  return function(newVal, oldVal, op) {
+  var fn = drm[!context.isAttrDir ? context.directive : attrPrefix];
+  return function (newVal, oldVal, op) {
     return fn.call(context, newVal, oldVal, op);
   }
 }
-var LinkContext = function LinkContext(el, directive, linker) {
+var LinkContext = function LinkContext(el, directive, linker, isAttrDir) {
   this.el = el;
   this.directive = directive;
   this.linker = linker;
+  this.isAttrDir = isAttrDir;
 };
 LinkContext.prototype.clone = function clone (el, linker) {
   var cloned = new LinkContext(el, this.directive, linker);
@@ -676,9 +694,9 @@ LinkContext.prototype.clone = function clone (el, linker) {
   }
   return cloned;
 };
-LinkContext.create = function create (el, directive, expr, text, linker, collector) {
+LinkContext.create = function create (el, directive, expr, text, linker, collector, isAttrDir) {
   var is2Way = directive === 'x-model';
-  var context = new LinkContext(el, directive, linker);
+  var context = new LinkContext(el, directive, linker, isAttrDir);
   if (!text) {
     context.watcher = Watcher.get(directive !== 'x-bind' ? expr : filterFnGen(expr, false), linker, makeUIHandler(context));
   } else {
@@ -697,19 +715,19 @@ LinkContext.create = function create (el, directive, expr, text, linker, collect
 };
 function modelSetter(path) {
   var setter = parsePath(path);
-  return function(val) {
+  return function (val) {
     return setter(this.linker.model, val);
   }
 }
 
 var exprEvFnCache = Object.create(null);
 function getExprFn$1(expr) {
-  return exprEvFnCache[expr] || (exprEvFnCache[expr] = new Function('m', '$event', ("with(m){" + expr + "}")));
+  return exprEvFnCache[expr] || (exprEvFnCache[expr] = new Function('m', '$event', '$el', ("with(m){" + expr + "}")));
 }
-function genEventFn(expr, model) {
+function genEventFn(expr, model, el) {
   var fn = getExprFn$1(expr);
   return function (ev) {
-    fn(model, ev);
+    fn(model, ev, el);
   }
 }
 function getLinkContextsFromInterpolation(linker, el, text, collector) {
@@ -751,7 +769,7 @@ function applyDirs(node, linker) {
           linker._eventInfos.push({
             el: node,
             name: o.name,
-            handler: genEventFn(o.expr, linker.model)
+            handler: genEventFn(o.expr, linker.model, node)
           });
         }
       });
@@ -810,15 +828,23 @@ function compile(linker, el, collector) {
           if (collector) {
             dirs = dirs.concat(contexts);
           }
-        } else if (attrName[0] === eventPrefix) {
-          if (!collector) {
-            linker._eventInfos.push({
-              el: el,
-              name: attrName.slice(1),
-              handler: genEventFn(attrValue, linker.model)
-            });
-          } else {
-            dirs.push({ name: attrName.slice(1), expr: attrValue });
+        } else {
+          var prefix = attrName[0];
+          if (prefix === eventPrefix) {
+            if (!collector) {
+              linker._eventInfos.push({
+                el: el,
+                name: attrName.slice(1),
+                handler: genEventFn(attrValue, linker.model, el)
+              });
+            } else {
+              dirs.push({ name: attrName.slice(1), expr: attrValue });
+            }
+          } else if (prefix === attrPrefix) {
+            linkContext = LinkContext.create(el, attrName.slice(1), attrValue, null, linker, collector, true);
+            if (collector) {
+              dirs.push(linkContext);
+            }
           }
         }
       });

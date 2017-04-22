@@ -12,8 +12,10 @@
 <body>
   <div class="main" id='demo'>
     <div x-for=' love in myloves'>
-      i love {{love.name}} and he/she is {{love.age}}
-      <input type="text" class="form-control" x-model='love.name' @focus='focus' @blur='blur'>
+      i love {{love.name}} and he/she is {{love.age}} ,
+      <a :href='"http://www.baidu.com/s?wd="+love.name+" "+love.age'>{{"http://www.baidu.com/s?wd="+love.name+" "+love.age}}</a>
+      <input type="text" class="form-control" x-model='love.name' :name='love.name' :age='love.age' :id='love.name+love.age' @focus='focus($el)'
+        @blur='blur($el)'>
       <input type="text" class="form-control" x-model='love.age'>
       <button type="button" class="btn btn-danger" @click="removeLove()">Remove</button>
     </div>

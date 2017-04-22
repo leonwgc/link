@@ -14,7 +14,13 @@ var methods = {
   },
   removeLove: function () {
     var vm = this;
-    vm.myloves.splice(this.$index,1);
+    vm.myloves.splice(this.$index, 1);
+  },
+  focus: function (el) {
+    el.style.color = 'red';
+  },
+  blur: function (el) {
+    el.style.color = '';
   }
 };
 

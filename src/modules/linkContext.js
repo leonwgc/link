@@ -4,28 +4,30 @@ import { evalExprFilter, evalTextNodeFilter } from './eval';
 import { hasFilter } from './lexer';
 import { isFunction, extend, parsePath } from './helper';
 import drm from '../directives/index';
+import { attrPrefix } from './var';
 
 const leftBracket = /(\{\{)/g;
 const rightBracket = /(\}\})/g;
 
 function filterFnGen(str, fromTextNode) {
-  return function(model) {
+  return function (model) {
     return fromTextNode ? evalTextNodeFilter(str, model) : evalExprFilter(str, model);
   }
 }
 
 function makeUIHandler(context) {
-  var fn = drm[context.directive];
-  return function(newVal, oldVal, op) {
+  var fn = drm[!context.isAttrDir ? context.directive : attrPrefix];
+  return function (newVal, oldVal, op) {
     return fn.call(context, newVal, oldVal, op);
   }
 }
 
 export class LinkContext {
-  constructor(el, directive, linker) {
+  constructor(el, directive, linker, isAttrDir) {
     this.el = el;
     this.directive = directive;
     this.linker = linker;
+    this.isAttrDir = isAttrDir;
   }
 
   clone(el, linker) {
@@ -38,9 +40,9 @@ export class LinkContext {
     }
     return cloned;
   }
-  static create(el, directive, expr, text, linker, collector) {
+  static create(el, directive, expr, text, linker, collector, isAttrDir) {
     var is2Way = directive === 'x-model';
-    var context = new LinkContext(el, directive, linker);
+    var context = new LinkContext(el, directive, linker, isAttrDir);
     if (!text) {
       context.watcher = Watcher.get(directive !== 'x-bind' ? expr : filterFnGen(expr, false), linker, makeUIHandler(context));
     } else {
@@ -64,7 +66,7 @@ export class LinkContext {
 
 function modelSetter(path) {
   var setter = parsePath(path);
-  return function(val) {
+  return function (val) {
     return setter(this.linker.model, val);
   }
 }
