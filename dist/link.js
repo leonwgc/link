@@ -148,13 +148,10 @@ function configRoutes(linker) {
       replaceHash(defaultPath);
       return;
     }
-    if (!route.model || !isObject(route.model)) {
-      route.model = {};
-    }
     var template = trim(route.template);
     if (!template) {
       if (route.templateUrl) {
-        loadTemplate(linker._routeTplStore, route.templateUrl, function (tpl) {
+        loadTemplate(linker._routeTplStore, route.templateUrl, function(tpl) {
           linkRoute(linker, route, tpl);
         });
       } else {
@@ -165,34 +162,18 @@ function configRoutes(linker) {
     }
   }
 }
+var lastRouteLinker;
 function linkRoute(linker, route, tpl) {
-  var preLinkReturn;
+  if (lastRouteLinker) {
+    lastRouteLinker.unlink();
+    lastRouteLinker = undefined;
+  }
   if (linker._routeEl) {
     linker._routeEl.innerHTML = tpl;
   }
-  if (route.lastLinker) {
-    route.lastLinker.unlink();
-  }
-  if (isFunction(route.preLink)) {
-    preLinkReturn = route.preLink.call(route, linker);
-  }
-  if (preLinkReturn && isFunction(preLinkReturn.then)) {
-    preLinkReturn.then(traceLink);
-  } else {
-    if (preLinkReturn === false) { return; }
-    traceLink();
-  }
-  function traceLink() {
-    if (!linker._routeEl) { return; }
-    route.lastLinker = new Link({
-      el: linker._routeEl,
-      model: route.model,
-      methods: route.methods
-    });
-    if (isFunction(route.postLink)) {
-      route.postLink.call(route, route.lastLinker);
-    }
-  }
+  lastRouteLinker = new Link(extend({
+    el: linker._routeEl
+  }, route, true));
 }
 
 function commonReact(linkContext, event) {
@@ -1015,8 +996,8 @@ var Link = function Link(config) {
     this._comTplStore = Object.create(null);
     this._renderComponent();
   }
-  if (this.created) {
-    this.created.call(this);
+  if (typeof this.created === 'function') {
+    this.created();
   }
   this._bindEvents();
 };
@@ -1068,7 +1049,7 @@ Link.prototype._addComputed = function _addComputed () {
 };
 Link.prototype._makeComputedGetter = function _makeComputedGetter (getter) {
   var watcher = Watcher.get(getter, this, null).getDeps();
-  return function () {
+  return function() {
     if (watcher.dirty || Watcher.target) {
       watcher.getValue();
       watcher.dirty = false;
@@ -1078,7 +1059,7 @@ Link.prototype._makeComputedGetter = function _makeComputedGetter (getter) {
 };
 Link.prototype._renderComponent = function _renderComponent () {
   var linker = this;
-  each(this._comCollection, function (com) {
+  each(this._comCollection, function(com) {
     renderComponent(linker, com);
   });
 };

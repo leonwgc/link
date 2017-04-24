@@ -35,8 +35,8 @@ export default class Link {
       this._renderComponent();
     }
     //created 
-    if (this.created) {
-      this.created.call(this);
+    if (typeof this.created === 'function') {
+      this.created();
     }
     this._bindEvents();
   }
@@ -93,7 +93,7 @@ export default class Link {
 
   _makeComputedGetter(getter) {
     var watcher = Watcher.get(getter, this, null).getDeps();
-    return function () {
+    return function() {
       if (watcher.dirty || Watcher.target) {
         watcher.getValue();
         watcher.dirty = false;
@@ -104,7 +104,7 @@ export default class Link {
 
   _renderComponent() {
     var linker = this;
-    each(this._comCollection, function (com) {
+    each(this._comCollection, function(com) {
       renderComponent(linker, com);
     });
   }

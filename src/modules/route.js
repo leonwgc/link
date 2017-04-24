@@ -1,4 +1,4 @@
-import { trim, loadTemplate, isFunction, isObject } from './helper';
+import { trim, loadTemplate, isFunction, isObject, extend } from './helper';
 import Link from './linker';
 
 export function hash(path) {
@@ -37,13 +37,10 @@ export function configRoutes(linker) {
       replaceHash(defaultPath);
       return;
     }
-    if (!route.model || !isObject(route.model)) {
-      route.model = {};
-    }
     var template = trim(route.template);
     if (!template) {
       if (route.templateUrl) {
-        loadTemplate(linker._routeTplStore, route.templateUrl, function (tpl) {
+        loadTemplate(linker._routeTplStore, route.templateUrl, function(tpl) {
           linkRoute(linker, route, tpl);
         });
       } else {
@@ -55,33 +52,17 @@ export function configRoutes(linker) {
   }
 }
 
+let lastRouteLinker;
+
 function linkRoute(linker, route, tpl) {
-  var preLinkReturn;
+  if (lastRouteLinker) {
+    lastRouteLinker.unlink();
+    lastRouteLinker = undefined;
+  }
   if (linker._routeEl) {
     linker._routeEl.innerHTML = tpl;
   }
-  if (route.lastLinker) {
-    route.lastLinker.unlink(); // destroy link
-  }
-  if (isFunction(route.preLink)) {
-    preLinkReturn = route.preLink.call(route, linker);
-  }
-  if (preLinkReturn && isFunction(preLinkReturn.then)) {
-    preLinkReturn.then(traceLink);
-  } else {
-    if (preLinkReturn === false) return; // skip link
-    traceLink();
-  }
-
-  function traceLink() {
-    if (!linker._routeEl) return; // no x-view , no route link 
-    route.lastLinker = new Link({
-      el: linker._routeEl,
-      model: route.model,
-      methods: route.methods
-    });
-    if (isFunction(route.postLink)) {
-      route.postLink.call(route, route.lastLinker);
-    }
-  }
+  lastRouteLinker = new Link(extend({
+    el: linker._routeEl
+  }, route, true));
 }
