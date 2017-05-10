@@ -1119,7 +1119,7 @@ function linkCom(linker, el, comConfig, tpl) {
     throw new Error('component model must be a function to return a model data');
   }
   var model = config.model = config.model();
-  var methods = config.methods || {};
+  var methods = config.methods || (config.methods = {});
   config.el = el.children[0];
   if (Array.isArray(config.props)) {
     var parentProp, parentPropVal;

@@ -1,6 +1,6 @@
 {
   "name": "link",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "a tiny mvvm ui lib",
   "main": "link.js",
   "scripts": {
