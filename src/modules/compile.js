@@ -12,7 +12,7 @@ function getExprFn(expr) {
 
 function genEventFn(expr, model, el) {
   var fn = getExprFn(expr);
-  return function (ev) {
+  return function(ev) {
     fn(model, ev, el);
   }
 }
@@ -28,7 +28,7 @@ function getClassLinkContext(linker, el, directive, expr, collector) {
 
   var contexts = [];
 
-  each(kvPairs, function (kv) {
+  each(kvPairs, function(kv) {
     spliter = kv.split(':');
     var linkContext = LinkContext.create(el, directive, spliter[1].trim(), null, linker, collector);
     linkContext.className = spliter[0].trim();
@@ -55,7 +55,7 @@ export function applyDirs(node, linker) {
   if (linker._dirs.length) {
     var dir = linker._dirs.shift();
     if (dir) {
-      each(dir, function (o) {
+      each(dir, function(o) {
         if (o instanceof LinkContext) {
           o.clone(node, linker);
         } else {
@@ -68,7 +68,7 @@ export function applyDirs(node, linker) {
       });
     }
     if (node.nodeType === 1) {
-      each(node.childNodes, function (n) {
+      each(node.childNodes, function(n) {
         applyDirs(n, linker);
       });
     }
@@ -112,14 +112,7 @@ export default function compile(linker, el, collector) {
         return;
       }
 
-      if (el.hasAttribute('x-view')) {
-        if (linker._routeEl) throw new Error('a link context can only have on more than one x-view');
-        el.removeAttribute('x-view');
-        linker._routeEl = el;
-        return;
-      }
-
-      each(el.attributes, function (attr) {
+      each(el.attributes, function(attr) {
         attrName = attr.name;
         attrValue = attr.value.trim();
         if (drm[attrName]) {
@@ -140,9 +133,7 @@ export default function compile(linker, el, collector) {
               dirs.push({ name: attrName.slice(1), expr: attrValue });
             }
           } else if (prefix === attrPrefix) {
-            // var contexts = getLinkContext(linker, el, attrName.slice(1), attrValue, collector, true);
             linkContext = LinkContext.create(el, attrName.slice(1), attrValue, null, linker, collector, true);
-            // contexts.push(linkContext);
             if (collector) {
               dirs.push(linkContext);
             }
@@ -164,7 +155,7 @@ export default function compile(linker, el, collector) {
     if (collector) {
       collector.push(dirs.length ? dirs : null);
     }
-    each(el.childNodes, function (node) {
+    each(el.childNodes, function(node) {
       compile(linker, node, collector);
     });
   } else if (nodeType === 3) {
@@ -176,7 +167,7 @@ export default function compile(linker, el, collector) {
       collector.push(dirs.length ? dirs : null);
     }
   } else if (nodeType === 9) {
-    each(el.childNodes, function (node) {
+    each(el.childNodes, function(node) {
       compile(linker, node);
     });
   }

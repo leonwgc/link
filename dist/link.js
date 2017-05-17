@@ -1,5 +1,5 @@
 /*!
- * link.js v0.7.0
+ * link.js v0.7.1
  * (c) 2016.10-2017 leonwgc
  * Released under the MIT License.
  */
@@ -113,67 +113,6 @@ if (typeof Promise !== 'undefined' && typeof Promise.resolve === 'function') {
   nextTick = function (f) {
     setTimeout(f, 0);
   };
-}
-
-function hash(path) {
-  if (typeof path === 'undefined') {
-    var href = location.href,
-      index = href.indexOf('#');
-    return index === -1 ? '' : href.slice(index + 1);
-  } else {
-    location.hash = path;
-  }
-}
-function replaceHash(path) {
-  var href = location.href,
-    index = href.indexOf('#');
-  if (index > -1) {
-    location.replace(href.slice(0, index) + '#' + path);
-  } else {
-    location.replace(href + '#' + path);
-  }
-}
-function configRoutes(linker) {
-  var routes = linker._routes.routes;
-  var defaultPath = linker._routes.defaultPath;
-  linker._eventInfos.unshift({
-    el: window,
-    name: 'hashchange',
-    handler: renderRouter
-  });
-  renderRouter();
-  function renderRouter() {
-    var route = routes[hash()];
-    if (!route) {
-      replaceHash(defaultPath);
-      return;
-    }
-    var template = trim(route.template);
-    if (!template) {
-      if (route.templateUrl) {
-        loadTemplate(linker._routeTplStore, route.templateUrl, function(tpl) {
-          linkRoute(linker, route, tpl);
-        });
-      } else {
-        linkRoute(linker, route, '');
-      }
-    } else {
-      linkRoute(linker, route, template);
-    }
-  }
-}
-var lastRouteLinker;
-function linkRoute(linker, route, tpl) {
-  if (lastRouteLinker) {
-    lastRouteLinker.unlink();
-    lastRouteLinker = undefined;
-  }
-  if (linker._routeEl) {
-    linker._routeEl.innerHTML = tpl;
-  }
-  lastRouteLinker = new Link(extend({
-    el: linker._routeEl
-  }, route, true));
 }
 
 function commonReact(linkContext, event) {
@@ -707,7 +646,7 @@ function getExprFn$1(expr) {
 }
 function genEventFn(expr, model, el) {
   var fn = getExprFn$1(expr);
-  return function (ev) {
+  return function(ev) {
     fn(model, ev, el);
   }
 }
@@ -719,7 +658,7 @@ function getClassLinkContext(linker, el, directive, expr, collector) {
     spliter,
     linkContext;
   var contexts = [];
-  each(kvPairs, function (kv) {
+  each(kvPairs, function(kv) {
     spliter = kv.split(':');
     var linkContext = LinkContext.create(el, directive, spliter[1].trim(), null, linker, collector);
     linkContext.className = spliter[0].trim();
@@ -743,7 +682,7 @@ function applyDirs(node, linker) {
   if (linker._dirs.length) {
     var dir = linker._dirs.shift();
     if (dir) {
-      each(dir, function (o) {
+      each(dir, function(o) {
         if (o instanceof LinkContext) {
           o.clone(node, linker);
         } else {
@@ -756,7 +695,7 @@ function applyDirs(node, linker) {
       });
     }
     if (node.nodeType === 1) {
-      each(node.childNodes, function (n) {
+      each(node.childNodes, function(n) {
         applyDirs(n, linker);
       });
     }
@@ -795,13 +734,7 @@ function compile(linker, el, collector) {
         }
         return;
       }
-      if (el.hasAttribute('x-view')) {
-        if (linker._routeEl) { throw new Error('a link context can only have on more than one x-view'); }
-        el.removeAttribute('x-view');
-        linker._routeEl = el;
-        return;
-      }
-      each(el.attributes, function (attr) {
+      each(el.attributes, function(attr) {
         attrName = attr.name;
         attrValue = attr.value.trim();
         if (drm[attrName]) {
@@ -843,7 +776,7 @@ function compile(linker, el, collector) {
     if (collector) {
       collector.push(dirs.length ? dirs : null);
     }
-    each(el.childNodes, function (node) {
+    each(el.childNodes, function(node) {
       compile(linker, node, collector);
     });
   } else if (nodeType === 3) {
@@ -855,7 +788,7 @@ function compile(linker, el, collector) {
       collector.push(dirs.length ? dirs : null);
     }
   } else if (nodeType === 9) {
-    each(el.childNodes, function (node) {
+    each(el.childNodes, function(node) {
       compile(linker, node);
     });
   }
@@ -988,10 +921,6 @@ var Link = function Link(config) {
   this._unlinked = false;
   this._initLifeCycleHooks(config);
   this._bootstrap();
-  if (this._routes) {
-    this._routeTplStore = Object.create(null);
-    configRoutes(this);
-  }
   if (glob.registeredTagsCount > 0 && this._comCollection.length > 0) {
     this._comTplStore = Object.create(null);
     this._renderComponent();

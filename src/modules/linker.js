@@ -1,4 +1,3 @@
-import { configRoutes } from './route';
 import compile, { applyDirs } from './compile';
 import { glob } from './var';
 import { extend, each, isString } from './helper';
@@ -25,11 +24,6 @@ export default class Link {
     this._unlinked = false;
     this._initLifeCycleHooks(config);
     this._bootstrap();
-
-    if (this._routes) {
-      this._routeTplStore = Object.create(null);
-      configRoutes(this);
-    }
     if (glob.registeredTagsCount > 0 && this._comCollection.length > 0) {
       this._comTplStore = Object.create(null);
       this._renderComponent();
