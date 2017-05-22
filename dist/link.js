@@ -161,7 +161,7 @@ function setModelReact(linkContext) {
     switch (type) {
       case 'text':
       case 'password': {
-        commonReact(linkContext, 'keyup');
+        commonReact(linkContext, 'input');
         break;
       }
       case 'radio': {
@@ -173,14 +173,14 @@ function setModelReact(linkContext) {
         break;
       }
       default: {
-        commonReact(linkContext, 'keyup');
+        commonReact(linkContext, 'input');
         break;
       }
     }
   } else if (nodeName === 'SELECT') {
     commonReact(linkContext, 'change');
   } else {
-    commonReact(linkContext, 'keyup');
+    commonReact(linkContext, 'input');
   }
 }
 
@@ -1070,7 +1070,7 @@ function linkCom(linker, el, comConfig, tpl) {
   linker._children.push(new Link(config));
 }
 
-function link$1(config) {
+function link(config) {
   if (!isObject(config)) {
     throw new Error('config must be an object.');
   }
@@ -1079,13 +1079,13 @@ function link$1(config) {
   }
   return new Link(config);
 }
-link$1.filter = function(name, fn) {
+link.filter = function(name, fn) {
   if (!filters[name] && typeof fn === 'function') {
     filters[name] = fn;
   }
 };
-link$1.com = registerComponent;
+link.com = registerComponent;
 
-return link$1;
+return link;
 
 })));

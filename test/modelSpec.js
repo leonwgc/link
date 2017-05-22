@@ -25,7 +25,7 @@ describe("model test suite", function () {
       expect(el.firstChild.value).toBe('wgc');
 
       el.firstChild.value = 'leon';
-      raiseEvent(el.firstChild, 'keyup');
+      raiseEvent(el.firstChild, 'input');
       expect(linker.model.name).toBe('leon');
     });
 

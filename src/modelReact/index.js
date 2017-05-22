@@ -10,7 +10,7 @@ export default function setModelReact(linkContext) {
     switch (type) {
       case 'text':
       case 'password': {
-        commonReact(linkContext, 'keyup');
+        commonReact(linkContext, 'input');
         break;
       }
       case 'radio': {
@@ -22,13 +22,13 @@ export default function setModelReact(linkContext) {
         break;
       }
       default: {
-        commonReact(linkContext, 'keyup');
+        commonReact(linkContext, 'input');
         break;
       }
     }
   } else if (nodeName === 'SELECT') {
     commonReact(linkContext, 'change');
   } else {
-    commonReact(linkContext, 'keyup');
+    commonReact(linkContext, 'input');
   }
 }

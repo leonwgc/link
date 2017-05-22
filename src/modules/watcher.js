@@ -1,6 +1,7 @@
 import { getCacheFn, isFunction, parsePath, each, nextTick } from './helper';
 import drm from '../directives/index';
 import { LinkContext } from './linkContext';
+import link from './link';
 
 const path = /^[\w$]+(\.[\w$]+)*$/;
 let uid = 0;
